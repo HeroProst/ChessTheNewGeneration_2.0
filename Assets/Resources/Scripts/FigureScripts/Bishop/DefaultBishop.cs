@@ -14,4 +14,16 @@ public class DefaultBishop : Figure
 
 		moveBehaiver = new DefaultBishopMove();
 	}
+
+	public DefaultBishop()
+    {
+		FigureType = TypesOfFigure.Bishop;
+		FigureCollection = CollectionType.Default;
+
+		moveBehaiver = new DefaultBishopMove();
+
+		price = 1;
+
+		figureName = "Слон";
+	}
 }

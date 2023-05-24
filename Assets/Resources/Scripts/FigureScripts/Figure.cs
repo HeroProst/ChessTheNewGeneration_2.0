@@ -47,7 +47,11 @@ public class Figure
 	public int price
 	{
 		get;
+		set;
 	}
+
+	public string figureName;
+
 	public enum Side
 	{
 		Bottom,
@@ -67,12 +71,97 @@ public class Figure
 		Bishop,
 		Knight,
 		Queen,
-		King
+		King,
+		None
 	}
 
 	public enum CollectionType
 	{
-		Default
+		Default,
+		None
+	}
+
+	public static Figure.CollectionType GetCollectionTypeByName(string name)
+    {
+		switch (name)
+		{
+			case "Default":
+				return Figure.CollectionType.Default; 
+			case "None":
+				return Figure.CollectionType.None;
+		}
+		return Figure.CollectionType.None;
+	}
+
+	public static string GetStringNameOfCollection(Figure.CollectionType collectionType)
+	{
+		switch (collectionType)
+		{
+			case Figure.CollectionType.Default:
+				return "Default";
+			case Figure.CollectionType.None:
+				return "None";
+		}
+		return "None";
+	}
+
+	public static string GetStringNameOfFigure(Figure.TypesOfFigure typesOfFigure)
+	{
+		switch (typesOfFigure)
+		{
+			case Figure.TypesOfFigure.Pawn:
+				return "Pawn";
+			case Figure.TypesOfFigure.Rook:
+				return "Rook";
+			case Figure.TypesOfFigure.Bishop:
+				return "Bishop";
+			case Figure.TypesOfFigure.Queen:
+				return "Queen";
+			case Figure.TypesOfFigure.King:
+				return "King";
+			case Figure.TypesOfFigure.Knight:
+				return "Knight";
+			case Figure.TypesOfFigure.None:
+				return "None";
+		}
+		return "None";
+	}
+
+	public static Figure.TypesOfFigure GetFigureTypeByName(string name)
+	{
+		{
+			switch (name)
+			{
+				case "Pawn":
+					return Figure.TypesOfFigure.Pawn;
+				case "Rook":
+					return Figure.TypesOfFigure.Rook;
+				case "Bishop":
+					return Figure.TypesOfFigure.Bishop;
+				case "Queen":
+					return Figure.TypesOfFigure.Queen;
+				case "Knight":
+					return Figure.TypesOfFigure.Knight;
+				case "King":
+					return Figure.TypesOfFigure.King;
+				case "None":
+					return Figure.TypesOfFigure.None;
+			}
+			return Figure.TypesOfFigure.None;
+		}
+	}
+
+	public static Figure.Side GetFigureSideByName(string name)
+    {
+        switch(name)
+		{
+			case "Bottom":
+				return Figure.Side.Bottom;
+			case "Upper":
+				return Figure.Side.Upper;
+			default:
+				return Figure.Side.Upper;
+		}
 	}
 
 	public void DeleteAllClones()

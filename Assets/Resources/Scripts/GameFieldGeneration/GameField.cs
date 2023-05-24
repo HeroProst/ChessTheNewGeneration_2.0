@@ -5,10 +5,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+public delegate void EndGameAction(string gameResult);
 public class GameField
 {
 	Cell[,] currentGameField;
 	Cell pressedCell;
+
+	EndGameAction endGameAction;
+
+	public string lastFigureMoves = "";
 
 	public Cell this[int indexForRow,int indexForCollumn]
 	{
@@ -27,7 +32,15 @@ public class GameField
 		return currentGameField;
 	}
 
-    public GameField(GameObject gameBorder)
+	public enum FieldType
+    {
+		LowRange,
+		MiddleRange,
+		LongRange,
+		All
+	}
+
+    public GameField(GameObject gameBorder, EndGameAction endGameAction)
     {
 		Transform[] rowsInGameBoarder = new Transform[gameBorder.transform.childCount];
 		for(int i = 0; i < gameBorder.transform.childCount;i++)
@@ -59,6 +72,29 @@ public class GameField
 				}
 			}
 		}
+		this.endGameAction = endGameAction;
+	}
+
+	public Figure.Side PlaceFigureOnByXY(string figureReplacement, Figure.Side currentPlayer)
+    {
+		if (figureReplacement == "")
+			return currentPlayer;
+		string[] figureArr = figureReplacement.Split(',');
+		string[] figureMoves;
+		string[] movesFromYX;
+		string[] movesToYX;
+		ResetCells();
+		for (int i = 0; i < figureArr.Length; i++)
+        {
+			figureMoves = figureArr[i].Split(' ');
+			movesFromYX = figureMoves[0].Split('_');
+			movesToYX = figureMoves[1].Split('_');
+			currentGameField[int.Parse(movesFromYX[0]), int.Parse(movesFromYX[1])].CurrentFigure.MoveFigure(currentGameField[int.Parse(movesToYX[0]), int.Parse(movesToYX[1])], currentGameField[int.Parse(movesFromYX[0]), int.Parse(movesFromYX[1])],this);
+			DeleteAllFigureClone(currentGameField[int.Parse(movesToYX[0]), int.Parse(movesToYX[1])].CurrentFigure);
+		}
+		ResetCells();
+		lastFigureMoves = "";
+		return ChangePlayerTurn(currentPlayer);
 	}
 
 	public Cell FindCellByLinckedGameObject(GameObject lickedCell)
@@ -88,6 +124,8 @@ public class GameField
 	{
 		GameObject pressedBoardCell = EventSystem.current.currentSelectedGameObject;
 		Cell currentCell = FindCellByLinckedGameObject(pressedBoardCell);
+		if (currentCell == null || currentCell.GetLinckedCell() == null)
+			return currentPlayer;
 		if(true)
 		{
 			switch (currentCell.GetLinckedCell().tag)
@@ -109,7 +147,6 @@ public class GameField
 
 	void ActionForDefaultCell(Cell currentCell, Figure.Side currentPlayer)
 	{
-		ResetCells();
 
 		if (currentCell == null)
 		{
@@ -117,9 +154,11 @@ public class GameField
 		}
 		if (currentCell.CurrentFigure == null || currentCell.CurrentFigure.FigureSide != currentPlayer)
 		{
-			Debug.Log(currentPlayer);
 			return;
 		}
+		ResetCells();
+
+		Debug.Log(currentCell.IsEnabled);
 
 		List<Cell> moveCells = currentCell.CurrentFigure.Move(this);
 
@@ -134,6 +173,7 @@ public class GameField
 	{
 		ResetCells();
 		pressedCell.CurrentFigure.MoveFigure(currentCell, pressedCell, this);
+		lastFigureMoves = $"{pressedCell.YPos}_{pressedCell.XPos} {currentCell.YPos}_{currentCell.XPos}";
 		DeleteAllFigureClone(currentCell.CurrentFigure);
 		ResetCells();
 		return ChangePlayerTurn(currentPlayer);
@@ -161,7 +201,9 @@ public class GameField
 		else
 		{
 			pressedCell.CurrentFigure.MoveFigure(GetGameField()[pressedCell.YPos, pressedCell.XPos + direction], currentCell, this);
+			lastFigureMoves = $"{currentCell.YPos}_{currentCell.XPos} {pressedCell.YPos}_{pressedCell.XPos + direction}";
 			pressedCell.CurrentFigure.MoveFigure(GetGameField()[pressedCell.YPos, pressedCell.XPos + (direction * 2)], pressedCell, this);
+			lastFigureMoves += $",{pressedCell.YPos}_{pressedCell.XPos} {pressedCell.YPos}_{pressedCell.XPos + (direction * 2)}";
 		}
 		return ChangePlayerTurn(currentPlayer);
 	}
@@ -246,6 +288,8 @@ public class GameField
 					continue;
 				if (currentGameField[i, j].GetLinckedCell().GetComponent<Image>().sprite == null)
 					continue;
+				if (currentGameField[i, j].CurrentFigure.FigureType == Figure.TypesOfFigure.King)
+					continue;
 				dangerCells.AddRange(currentGameField[i, j].CurrentFigure.TraceMoveToKing(this));
 			}
 		}
@@ -302,9 +346,10 @@ public class GameField
 			currentPlayer = Figure.Side.Upper;
 		EnableAllCell();
 		CheckShah(currentPlayer);
-		CheckMat(currentPlayer);
-		CheckPat(currentPlayer);
+		if (!CheckMat(currentPlayer))
+			CheckPat(currentPlayer);
 		return currentPlayer;
+
 	}
 
 	List<Cell> FindEnableFigure(Figure.Side currentPlayer)
@@ -338,7 +383,7 @@ public class GameField
 		List<Cell> dangerCells = GetDangerCellToKing(currentPlayer);
 		List<Figure> dangerFigure = GetDangerFigureForKing(currentPlayer);
 		if (dangerFigure.Count > 1)
-		{
+		{			
 			DisableAllAlly(currentPlayer);
 			return;
 		}
@@ -361,9 +406,14 @@ public class GameField
 
 			foreach (Cell cellInSaveCell in saveCells)
 			{
+				if (cellInSaveCell.CurrentFigure != null)
+                {
+					if(cellInSaveCell.CurrentFigure.FigureSide == cell.CurrentFigure.FigureSide)
+						continue;
+				}
 				if (!dangerCells.Contains(cellInSaveCell))
 				{
-					cellInSaveCell.DisableCellEnabled();
+					cellInSaveCell.DisableCell();
 				}
 				else
 				{
@@ -372,31 +422,40 @@ public class GameField
 						if (dangerFigure.Contains(cellInSaveCell.CurrentFigure))
 							stayFigureActive = true;
 						else
-							cellInSaveCell.DisableCellEnabled();
+							cellInSaveCell.DisableCell();
 					}
 					else
+                    {
 						stayFigureActive = true;
+					}
 				}
 			}
 			cell.IsEnabled = stayFigureActive;
-			GetKingCell(currentPlayer).IsEnabled = true;
 		}
+		GetKingCell(currentPlayer).IsEnabled = true;
 	}
 
-	void CheckMat(Figure.Side currentPlayer)
+	bool CheckMat(Figure.Side currentPlayer)
 	{
 		if (FindEnableFigure(currentPlayer).Count == 0)
 		{
 			if(GetKingCell(currentPlayer).CurrentFigure.Move(this).Count == 0)
 			{
-				if(GetDangerFigureForKing(currentPlayer).Count != 0)
-					Debug.Log("Шах и мат");
+				if (GetDangerFigureForKing(currentPlayer).Count != 0)
+                {
+					if(currentPlayer == Figure.Side.Bottom)
+						endGameAction.Invoke("Мат. \nЧерные победили");
+					else
+						endGameAction.Invoke("Мат. \nБелые победили");
+					return true;
+				}
 			}
 			ResetCells();
 		}
+		return false;
 	}
 
-	void CheckPat(Figure.Side currentPlayer)
+	bool CheckPat(Figure.Side currentPlayer)
 	{
 		List<Figure> movebleFigure = new List<Figure>();
 		foreach(Cell cell in currentGameField)
@@ -415,8 +474,13 @@ public class GameField
 		}
 		if(movebleFigure.Count == 0)
 		{
-			Debug.Log("ПАТ");
+			if (currentPlayer == Figure.Side.Bottom)
+				endGameAction.Invoke("ПАT.");
+			else
+				endGameAction.Invoke("ПАT.");
+			return true;
 		}
+		return false;
 	}
 
 	void EnableAllCell()

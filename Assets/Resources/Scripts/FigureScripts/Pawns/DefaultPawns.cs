@@ -16,18 +16,32 @@ public class DefaultPawns : Figure
 		moveBehaiver = new DefaultPawnsMove();
 	}
 
+	public DefaultPawns()
+    {
+		FigureType = TypesOfFigure.Pawn;
+		FigureCollection = CollectionType.Default;
+
+		moveBehaiver = new DefaultPawnsMove();
+
+		this.price = 1;
+
+		this.figureName = "Пешка";
+	}
+
 	public override void MoveFigure(Cell cellToMoveFigure, Cell cellFromMoveCell, GameField currentGameField)
 	{
 		Color cellColor;
 
-		if (moveCount < 1)
+		if (moveCount == 0)
 		{
+			Debug.Log(Mathf.Abs(cellToMoveFigure.YPos - cellFromMoveCell.YPos));
+
 			int cellToGo = 1;
 			if (FigureSide == Side.Upper)
 			{
 				cellToGo = -1;
 			}
-			if (Mathf.Abs(cellToMoveFigure.XPos - cellFromMoveCell.XPos) < 1)
+			if (Mathf.Abs(cellToMoveFigure.YPos - cellFromMoveCell.YPos) > 1)
 			{
 				currentGameField.GetGameField()[cellFromMoveCell.YPos - cellToGo, cellFromMoveCell.XPos].CurrentFigure = this;
 				cellColor = currentGameField.GetGameField()[cellFromMoveCell.YPos - cellToGo, cellFromMoveCell.XPos].GetLinckedCell().GetComponent<Image>().color;

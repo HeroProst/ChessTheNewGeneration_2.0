@@ -14,4 +14,16 @@ public class DefaultQueen : Figure
 
 		moveBehaiver = new DefaultQueenMove();
 	}
+
+	public DefaultQueen()
+    {
+		FigureType = TypesOfFigure.Queen;
+		FigureCollection = CollectionType.Default;
+
+		moveBehaiver = new DefaultQueenMove();
+
+		price = 1;
+
+		figureName = "Королева";
+	}
 }

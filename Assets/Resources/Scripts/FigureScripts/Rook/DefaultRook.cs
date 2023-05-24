@@ -14,4 +14,17 @@ public class DefaultRook : Figure
 
 		moveBehaiver = new DefaultRookMove();
 	}
+	
+	public DefaultRook()
+    {
+		FigureType = TypesOfFigure.Rook;
+		FigureCollection = CollectionType.Default;
+
+		moveBehaiver = new DefaultRookMove();
+
+		price = 1;
+
+		figureName = "Ладья";
+	}
 }
+

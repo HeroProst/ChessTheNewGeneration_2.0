@@ -13,12 +13,12 @@ public class Cell
         set => cellEnable = value;
 	}
 
-    public void DisableCellEnabled()
+    public void DisableCell()
 	{
         cellEnable = false;
 	}
 
-    public void EnableCellEnabled()
+    public void EnableCell()
 	{
         cellEnable = true;
 	}
@@ -53,9 +53,13 @@ public class Cell
                     currentFigure.DeleteAllClones();
                 value.XPos = XPos;
                 value.YPos = YPos;
-                Color cellColor = GetLinckedCell().GetComponent<Image>().color;
-                cellColor.a = 1;
-                GetLinckedCell().GetComponent<Image>().color = cellColor;
+                Color cellColor;
+                if (GetLinckedCell() != null)
+                {
+                    cellColor = GetLinckedCell().GetComponent<Image>().color;
+                    cellColor.a = 1;
+                    GetLinckedCell().GetComponent<Image>().color = cellColor;
+                }
             }
             currentFigure = value;
         }
@@ -129,3 +133,4 @@ public class Cell
         cellToSwapFigure.GetLinckedCell().GetComponent<Image>().sprite = cellSprite;
     }
 }
+    

@@ -2,11 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class SetFigureFactory
+public abstract class SetFiguretFactory
 {
 	protected Figure.Side figureSide;
 	protected Figure.SpriteModel figureSprites;
-	public SetFigureFactory(Figure.Side figureSide, Figure.SpriteModel figureSprites)
+	public SetFiguretFactory(Figure.Side figureSide, Figure.SpriteModel figureSprites)
 	{
 		this.figureSide = figureSide;
 		this.figureSprites = figureSprites;
