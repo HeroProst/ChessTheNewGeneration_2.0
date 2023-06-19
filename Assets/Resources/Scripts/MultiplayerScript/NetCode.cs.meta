@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c659432f126c97e4dbe8feb20923fd2f
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - PlayerDisconectMenu: {instanceID: 0}
+  - MainCanvas: {instanceID: 0}
+  - disconectFromServerMenu: {fileID: 1962630052152734464, guid: e3446343626aaf148a8afff02fd6dfef, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
